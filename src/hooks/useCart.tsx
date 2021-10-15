@@ -24,51 +24,53 @@ const CartContext = createContext<CartContextData>({} as CartContextData);
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(() => {
     const storagedCart = localStorage.getItem('@RocketShoes:cart');
-
+    console.log("buscando o cart "+ storagedCart)
     if (storagedCart) {
       return JSON.parse(storagedCart);
     }
 
     return [];
   });
+  
 
   const addProduct = async (productId: number) => {
     try {
       const stock = await api.get(`/stock/${productId}`);
-      // if (!stock) throw 'Estoque não pode ser verificado';
-      // let storaged = await localStorage.getItem('@RocketShoes:cart');
+      const productData = await api.get(`/products/${productId}`)
 
-      // if(storaged) {          
-      //   let storagedJson = JSON.parse(storaged);        
-
-      //   for(var i = 0; i < storagedJson.length; i++) {
-      //     if(storagedJson[i].productId === productId) {
-      //         if(storagedJson[i].amount < stock.data.amount) {
-      //           storagedJson[i].amount++;
-      //           await localStorage.setItem('@RocketShoes:cart', JSON.stringify(storagedJson));
-      //           return              
-      //         } else {
-      //           throw 'Quantidade insuficiente em estoque';
-      //         }
-      //     }
-      //   }
+        if(cart.length > 0) {
         
-      //   let newArray = [...storagedJson, {productId, amount: 1}];
-      //   await localStorage.setItem('@RocketShoes:cart', JSON.stringify(newArray));
-        
-      // } else {
-      //   let newProductToCart = [{
-      //     productId,
-      //     amount: 1,
-      //   }];
+        let newProdInCart: Product = {
+          id: productId,
+          title: productData.data.title as string,
+          price: productData.data.price as number,
+          image: productData.data.image as string,
+          amount: 1,
+        }
 
-      //   await localStorage.setItem('@RocketShoes:cart', JSON.stringify(newProductToCart));
-      //   console.log('abrindo carrinho')
-      // }   
-      
+        const cartAfter = [...cart, newProdInCart];
+  
+        await localStorage.setItem('@RocketShoes:cart', JSON.stringify(cartAfter));
+        setCart(cartAfter);
+
+      } else {
+        let openingCart: Product[] = [{
+          id: productId,
+          title: productData.data.title as string,
+          price: productData.data.price as number,
+          image: productData.data.image as string,
+          amount: 1,
+        }]
+        await localStorage.setItem('@RocketShoes:cart', JSON.stringify(openingCart));
+        setCart(openingCart);
+
+      }  
     } catch(err) {
-      console.log(err)
-      return toast.error(err as string);
+      if(err) {
+        console.log(err)
+        return toast.error(err as string);
+      }
+      return toast.error('erro ao acessar database');
     }
   };
 
@@ -80,7 +82,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     }
   };
 
-  // TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEESTAAAAAAAAAAAAAAAAAAAAR
+
   const updateProductAmount = async ({
     productId,
     amount,
@@ -89,17 +91,20 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       const stock = await api.get(`/stock/${productId}`);
       if(!stock) throw 'Erro ao acessar o estoque';
 
-      let index = cart.findIndex(cartItem => cartItem.id === productId);
+      let index = cart.findIndex((cartItem) => cartItem.id === productId);
+
       if(cart[index].amount < stock.data.amount) {
-        cart[index].amount = amount
-        setCart(cart);
+        let newCartArray = cart;
+        newCartArray[index].amount = amount;
+        await localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCartArray));
+        setCart([...newCartArray]);
+
       } else {
         throw 'Quantidade solicitada fora de estoque';
       }
 
-      // TODO
     } catch(err) {
-      // TODO
+      // if not acessing stock happens
       return toast.error(err as string);
     }
   };

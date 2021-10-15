@@ -45,23 +45,23 @@ const Home = (): JSX.Element => {
   }, []);
 
   function handleAddProduct(id: number) {
-
+    let amountAlready = false;
     // checking if cart has this product already
-    const checkCartForProduct = cart.filter(cartItem => cartItem.id === id);
-    if(checkCartForProduct.length > 0) {
+    for(var i = 0; i < cart.length; i++) {
+      if(cart[i].id === id && !amountAlready) {
 
       // if it has, new amount is sent to useCart
-      const newAmount = checkCartForProduct[0].amount + 1;
-      const refreshCart = {
-        productId: id,
-        amount: newAmount,
+        const newAmount = cart[i].amount + 1;
+        const refreshCart = {
+          productId: id,
+          amount: newAmount,
+        }
+        updateProductAmount(refreshCart);
+        return;
       }
-      updateProductAmount(refreshCart);
-
-    } else {
+    }
       // if it hasn`t the product in cart, addNewProduct is called
       addProduct(id);
-    }
   }
 
   return (
