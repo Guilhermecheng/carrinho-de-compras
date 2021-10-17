@@ -23,8 +23,7 @@ interface CartItemsAmount {
 
 const Home = (): JSX.Element => {
   const [products, setProducts] = useState<ProductFormatted[]>([]);
-  const { addProduct, cart, updateProductAmount } = useCart();
-  console.log(cart)
+  const { addProduct, cart } = useCart();
 
   const cartItemsAmount = cart.reduce((sumAmount, product) => {
     const { id, amount } = product;
@@ -45,23 +44,7 @@ const Home = (): JSX.Element => {
   }, []);
 
   function handleAddProduct(id: number) {
-    let amountAlready = false;
-    // checking if cart has this product already
-    for(var i = 0; i < cart.length; i++) {
-      if(cart[i].id === id && !amountAlready) {
-
-      // if it has, new amount is sent to useCart
-        const newAmount = cart[i].amount + 1;
-        const refreshCart = {
-          productId: id,
-          amount: newAmount,
-        }
-        updateProductAmount(refreshCart);
-        return;
-      }
-    }
-      // if it hasn`t the product in cart, addNewProduct is called
-      addProduct(id);
+    addProduct(id);
   }
 
   return (

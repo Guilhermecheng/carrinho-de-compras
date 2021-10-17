@@ -11,14 +11,11 @@ const Header = (): JSX.Element => {
   // const { cart } = useCart();
   // const cartSize =  //  apenas para exemplo;
   const [cartSize, setCartSize] = useState(0);
+  const { cart } = useCart();
 
-  // useState provisório para funcionamento do cartSize
   useEffect(() => {
-    fetch('http://localhost:3333/stock')
-      .then(response => response.json())
-      .then(response => setCartSize(response.length))
-
-  }, []);
+    setCartSize(cart.length);  
+  }, [cart]);
 
   return (
     <Container>
